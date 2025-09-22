@@ -16,11 +16,24 @@ def read_readme():
 # Read version from __init__.py
 def get_version():
     """Get version from tianshou/__init__.py."""
-    init_path = os.path.join(os.path.dirname(__file__), "tianshou", "__init__.py")
-    with open(init_path, "r", encoding="utf-8") as f:
-        for line in f:
-            if line.startswith("__version__"):
-                return line.split('"')[1]
+    # Try multiple possible locations for the __init__.py file
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), "tianshou", "__init__.py"),
+        os.path.join(os.path.dirname(__file__), "__init__.py"),
+        os.path.join(os.path.dirname(__file__), "..", "tianshou", "__init__.py"),
+    ]
+    
+    for init_path in possible_paths:
+        if os.path.exists(init_path):
+            try:
+                with open(init_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.startswith("__version__"):
+                            return line.split('"')[1]
+            except (FileNotFoundError, IndexError):
+                continue
+    
+    # Fallback version if __init__.py is not found
     return "1.2.0-dev"
 
 # Core dependencies
